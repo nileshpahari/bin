@@ -1,0 +1,65 @@
+#!/bin/env sh
+
+# INIT
+printf "$$" > ~/.cache/pidofbar
+sec=0
+
+update_net () {
+	net="$(sh ~/.local/bin/nettraf)"
+}
+
+update_cpu () {
+	cpu="$(mpstat 1 1 | awk '/all/ {print 100 - $NF}' | tail -1)"
+}
+update_cputemp () {
+	cputemp="$(sensors | awk '/Core 0/ {print $3}')"
+}
+
+update_memory () {
+	memory="$(free -h | sed -n "2s/\([^ ]* *\)\{2\}\([^ ]*\).*/\2/p")"
+}
+
+update_battery () {
+	battery="$(sh ~/.local/bin/dwmblocks/sb-battery)"
+}
+
+update_time () {
+	time="$(date +"[  %I:%M %p ]")"
+}
+
+update_vol () {
+	vol="$([ "$(pamixer --get-mute)" = "false" ] && printf ' ' || printf ' ')$(pamixer --get-volume)%"
+}
+
+# We have to run this only once.
+update_vol
+
+display () {
+	xsetroot -name "[ $net ] [ $cpu% ] [  $cputemp ] [  $memory ] [ $battery ] [ $vol ] $time"
+}
+
+# Handling receiving signal
+# RTMIN = 34 (always)
+trap	"update_vol;display"	"RTMIN"
+
+## kill -m "$(cat ~/.cache/pidofbar)"
+# where m = 34 + n
+
+while true
+do
+	sleep 1 &
+  wait && {
+		# to update item ever n seconds with a offset of m
+		## [ $((sec % n)) -eq m ] && udpate_item
+		[ $((sec % 1 )) -eq 0 ] && update_net
+		[ $((sec % 1 )) -eq 0 ] && update_time
+		[ $((sec % 1 )) -eq 0 ] && update_memory
+		[ $((sec % 1 )) -eq 0 ] && update_battery
+		[ $((sec % 3 )) -eq 0 ] && update_cputemp
+		[ $((sec % 1 )) -eq 0 ] && update_cpu
+
+		# how often the display updates ( 5 seconds )
+		[ $((sec % 1 )) -eq 0 ] && display
+		sec=$((sec + 1))
+	}
+done
