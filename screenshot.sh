@@ -17,13 +17,13 @@ save_shader() {
 save_shader # Saving the current shader
 
 if [ -z "$XDG_PICTURES_DIR" ]; then
-	XDG_PICTURES_DIR="$HOME/Pictures"
+	XDG_PICTURES_DIR="$HOME/pix"
 fi
 
 scrDir=$(dirname "$(realpath "$0")")
 source $scrDir/globalcontrol.sh
 swpy_dir="${confDir}/swappy"
-save_dir="${2:-$XDG_PICTURES_DIR/Screenshots}"
+save_dir="${XDG_PICTURES_DIR}/ss"
 save_file=$(date +'%y%m%d_%Hh%Mm%Ss_screenshot.png')
 temp_screenshot="/tmp/screenshot.png"
 
