@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
-kitty --class clipvim sh -c "wl-paste | nvim -"
+# kitty --class vimclip sh -c "wl-paste | nvim +'set buftype=' -"
+CLASS="vimclip"
+
+kitty --class "$CLASS" sh -c "wl-paste | nvim -" &
+
+while ! hyprctl clients | grep -q "$CLASS"; do
+  sleep 0.01
+done
+
+hyprctl dispatch setfloating "class:$CLASS"
+hyprctl dispatch centerwindow "class:$CLASS"
 # # tmp="/tmp/clip_$$.txt"
 # tmp="/tmp/clip"
 #
